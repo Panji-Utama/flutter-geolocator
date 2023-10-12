@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+void main() {
+  runApp(MaterialApp(
+    home: LocationPage(),
+  ));
+}
 
 class LocationPage extends StatefulWidget {
   const LocationPage({Key? key}) : super(key: key);
@@ -69,27 +76,87 @@ class _LocationPageState extends State<LocationPage> {
     });
   }
 
+  bool _showingMarker = false;
+
+  void _showMarker() {
+    setState(() {
+      _showingMarker = true;
+    });
+  }
+
+  void _closeMarker() {
+    setState(() {
+      _showingMarker = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Location Page")),
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('LAT: ${_currentPosition?.latitude ?? ""}'),
-              Text('LNG: ${_currentPosition?.longitude ?? ""}'),
-              Text('ADDRESS: ${_currentAddress ?? ""}'),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _getCurrentPosition,
-                child: const Text("Get Current Location"),
-              )
-            ],
+    if (_showingMarker) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Show Marker Page")),
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  height: 300, // Adjust the size as needed
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                        _currentPosition?.latitude ?? 0.0,
+                        _currentPosition?.longitude ?? 0.0,
+                      ),
+                      zoom: 15.0,
+                    ),
+                    markers: {
+                      Marker(
+                        markerId: MarkerId("selectedLocation"),
+                        position: LatLng(
+                          _currentPosition?.latitude ?? 0.0,
+                          _currentPosition?.longitude ?? 0.0,
+                        ),
+                      ),
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _closeMarker,
+                  child: const Text("Close"),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    } else {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Location Page")),
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('LAT: ${_currentPosition?.latitude ?? ""}'),
+                Text('LNG: ${_currentPosition?.longitude ?? ""}'),
+                Text('ADDRESS: ${_currentAddress ?? ""}'),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _getCurrentPosition,
+                  child: const Text("Get Current Location"),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _showMarker,
+                  child: const Text("Show Marker"),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
   }
 }
