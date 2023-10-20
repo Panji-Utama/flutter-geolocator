@@ -1,162 +1,91 @@
-import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+// import 'package:latlong2/latlong.dart';
 
-void main() {
-  runApp(MaterialApp(
-    home: LocationPage(),
-  ));
-}
+// class LocationPage extends StatefulWidget {
+//   const LocationPage({Key? key}) : super(key: key);
 
-class LocationPage extends StatefulWidget {
-  const LocationPage({Key? key}) : super(key: key);
+//   @override
+//   State<LocationPage> createState() => _LocationPageState();
+// }
 
-  @override
-  State<LocationPage> createState() => _LocationPageState();
-}
+// class _LocationPageState extends State<LocationPage> {
+//   LatLng? _currentPosition;
+//   bool _showingMarker = false;
 
-class _LocationPageState extends State<LocationPage> {
-  String? _currentAddress;
-  Position? _currentPosition;
+//   void _showMarker() {
+//     setState(() {
+//       _showingMarker = true;
+//     });
+//   }
 
-  Future<bool> _handleLocationPermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+//   void _closeMarker() {
+//     setState(() {
+//       _showingMarker = false;
+//     });
+//   }
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Location services are disabled. Please enable the services')));
-      return false;
-    }
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permissions are denied')));
-        return false;
-      }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Location permissions are permanently denied, we cannot request permissions.')));
-      return false;
-    }
-    return true;
-  }
-
-  Future<void> _getCurrentPosition() async {
-    final hasPermission = await _handleLocationPermission();
-
-    if (!hasPermission) return;
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((Position position) {
-      setState(() => _currentPosition = position);
-      _getAddressFromLatLng(_currentPosition!);
-    }).catchError((e) {
-      debugPrint(e);
-    });
-  }
-
-  Future<void> _getAddressFromLatLng(Position position) async {
-    await placemarkFromCoordinates(
-            _currentPosition!.latitude, _currentPosition!.longitude)
-        .then((List<Placemark> placemarks) {
-      Placemark place = placemarks[0];
-      setState(() {
-        _currentAddress =
-            '${place.street}, ${place.subLocality}, ${place.subAdministrativeArea}, ${place.postalCode}';
-      });
-    }).catchError((e) {
-      debugPrint(e);
-    });
-  }
-
-  bool _showingMarker = false;
-
-  void _showMarker() {
-    setState(() {
-      _showingMarker = true;
-    });
-  }
-
-  void _closeMarker() {
-    setState(() {
-      _showingMarker = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_showingMarker) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Show Marker Page")),
-        body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 300, // Adjust the size as needed
-                  child: GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(
-                        _currentPosition?.latitude ?? 0.0,
-                        _currentPosition?.longitude ?? 0.0,
-                      ),
-                      zoom: 15.0,
-                    ),
-                    markers: {
-                      Marker(
-                        markerId: MarkerId("selectedLocation"),
-                        position: LatLng(
-                          _currentPosition?.latitude ?? 0.0,
-                          _currentPosition?.longitude ?? 0.0,
-                        ),
-                      ),
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _closeMarker,
-                  child: const Text("Close"),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    } else {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Location Page")),
-        body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('LAT: ${_currentPosition?.latitude ?? ""}'),
-                Text('LNG: ${_currentPosition?.longitude ?? ""}'),
-                Text('ADDRESS: ${_currentAddress ?? ""}'),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: _getCurrentPosition,
-                  child: const Text("Get Current Location"),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _showMarker,
-                  child: const Text("Show Marker"),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     if (_showingMarker) {
+//       return Scaffold(
+//         appBar: AppBar(title: const Text("Show Marker Page")),
+//         body: SafeArea(
+//           child: Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Container(
+//                   height: 300, // Adjust the size as needed
+//                   child: OSMFlutter(
+//                     currentPosition: _currentPosition ?? LatLng(0.0, 0.0),
+//                     zoom: 15.0,
+//                     markers: {
+//                       Marker(
+//                         width: 40.0,
+//                         height: 40.0,
+//                         point: _currentPosition ?? LatLng(0.0, 0.0),
+//                         builder: (ctx) => Container(
+//                           child: Icon(
+//                             Icons.location_pin,
+//                             color: Colors.red,
+//                             size: 40.0,
+//                           ),
+//                         ),
+//                       ),
+//                     }, controller: null,
+//                   ),
+//                 ),
+//                 const SizedBox(height: 16),
+//                 ElevatedButton(
+//                   onPressed: _closeMarker,
+//                   child: const Text("Close"),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       );
+//     } else {
+//       return Scaffold(
+//         appBar: AppBar(title: const Text("Location Page")),
+//         body: SafeArea(
+//           child: Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Text('LAT: ${_currentPosition?.latitude ?? ""}'),
+//                 Text('LNG: ${_currentPosition?.longitude ?? ""}'),
+//                 const SizedBox(height: 32),
+//                 ElevatedButton(
+//                   onPressed: _showMarker,
+//                   child: const Text("Show Marker"),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       );
+//     }
+//   }
+// }
