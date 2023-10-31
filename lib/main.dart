@@ -19,7 +19,8 @@ class LocationData with ChangeNotifier {
     longitude = lon;
 
     final coordinates = Coordinates(lat, lon);
-    final addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    final addresses =
+        await Geocoder.local.findAddressesFromCoordinates(coordinates);
     if (addresses.isNotEmpty) {
       address = addresses.first.addressLine;
     } else {
@@ -63,8 +64,8 @@ class _LocationPageState extends State<LocationPage> {
   Future<void> _getLocation() async {
     try {
       final currentLocation = await location.getLocation();
-      Provider.of<LocationData>(context, listen: false)
-          .updateLocationData(currentLocation.latitude, currentLocation.longitude);
+      Provider.of<LocationData>(context, listen: false).updateLocationData(
+          currentLocation.latitude, currentLocation.longitude);
     } catch (e) {
       print(e);
     }
@@ -74,7 +75,7 @@ class _LocationPageState extends State<LocationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Current Location'),
+        title: Text('Lokasi Saat Ini'),
       ),
       body: Center(
         child: Column(
@@ -82,7 +83,7 @@ class _LocationPageState extends State<LocationPage> {
           children: <Widget>[
             Text('Latitude: ${Provider.of<LocationData>(context).latitude}'),
             Text('Longitude: ${Provider.of<LocationData>(context).longitude}'),
-            Text('Address: ${Provider.of<LocationData>(context).address}'),
+            Text('Alamat: ${Provider.of<LocationData>(context).address}'),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
